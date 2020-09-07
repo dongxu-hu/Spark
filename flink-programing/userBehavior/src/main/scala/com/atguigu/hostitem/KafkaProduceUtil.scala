@@ -12,12 +12,11 @@ object KafkaProduceUtil {
   def writeTokafka(topic:String): Unit ={
 
     val properties = new Properties()
-    properties.setProperty("bootstrap.servers", "localhost:9092")
-    properties.setProperty("group.id", "consumer-group")
-    properties.setProperty("key.deserializer",
-      "org.apache.kafka.common.serialization.StringDeserializer")
-    properties.setProperty("value.deserializer",
-      "org.apache.kafka.common.serialization.StringDeserializer")
+    properties.setProperty("bootstrap.servers", "hadoop202:9092")
+    properties.setProperty("key.serializer",
+      "org.apache.kafka.common.serialization.StringSerializer")
+    properties.setProperty("value.serializer",
+      "org.apache.kafka.common.serialization.StringSerializer")
     properties.setProperty("auto.offset.reset", "latest")
 
     val producer = new KafkaProducer[String, String](properties)

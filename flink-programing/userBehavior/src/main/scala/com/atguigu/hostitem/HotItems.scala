@@ -33,23 +33,22 @@ object HotItems {
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 
     // 读取数据并转换为样例类，提起时间戳设置watermark
-    //val inputStream: DataStream[String] = env.readTextFile("F:\\MyWork\\GitDatabase\\flink-programing\\userBehavior\\src\\main\\resources\\UserBehavior.csv")
+    val inputStream: DataStream[String] = env.readTextFile("F:\\MyWork\\GitDatabase\\flink-programing\\userBehavior\\src\\main\\resources\\UserBehavior.csv")
 
 
     // 从kafka中读取数据
-    val properties = new Properties()
-    properties.setProperty("bootstrap.servers","hadoop202:9092")
-
-    val inputStream: DataStream[String] =env.addSource( new FlinkKafkaConsumer[String]("hostitem",new SimpleStringSchema(),properties))
+//    val properties = new Properties()
+//    properties.setProperty("bootstrap.servers","hadoop202:9092")
+//    val inputStream: DataStream[String] =env.addSource( new FlinkKafkaConsumer[String]("hostitem",new SimpleStringSchema(),properties))
 
 
     val DataStream: DataStream[UserBehavior] = inputStream.map(line => {
       val arr: Array[String] = line.split(",")
       UserBehavior(arr(0).toLong, arr(1).toLong, arr(2).toInt, arr(3), arr(4).toLong)
     })
-        .assignAscendingTimestamps(_.timestamp*1000)   // 获取watermark，时间戳提取器
+        .assignAscendingTimestamps(_.timestamp*1000)   // 获取watermark，时间戳提取器，升序获取的watermark比正常时间戳晚 1ms
 
-    DataStream.print("data")
+//    DataStream.print("data")
 
     // 获取窗口聚合结果
     val aggSteam :DataStream[ItemViewCount]= DataStream
@@ -58,9 +57,9 @@ object HotItems {
       .timeWindow(Time.hours(1),Time.minutes(5))  // 窗口定义
       .aggregate(new ItemCountAgg(), new ItemCountWindowResult()) // 进行窗口聚合
 
-    aggSteam.print("agg")
+//    aggSteam.print("agg")
 
-    // 安装窗口分组，排序输出TopN
+    // 使用窗口分组，排序输出TopN
     val resultStream: DataStream[String]= aggSteam
         .keyBy("windowEnd")
         .process(new TopNHostItemsResult(5))
@@ -120,7 +119,7 @@ class TopNHostItemsResult(n: Int) extends  KeyedProcessFunction[Tuple,ItemViewCo
                               ctx: KeyedProcessFunction[Tuple, ItemViewCount, String]#Context, out: Collector[String]): Unit = {
 
     itemViewCountListState.add(value)
-    // 注册一个定时器，windowEnd + 100 触发   为什么不需要进行判断？？
+    // 注册一个定时器，windowEnd + 100 触发
     ctx.timerService().registerEventTimeTimer(value.windowEnd + 100)
   }
 

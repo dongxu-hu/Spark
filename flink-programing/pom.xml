@@ -11,6 +11,8 @@
     <modules>
         <module>flink-tutorial</module>
         <module>userBehavior</module>
+        <module>NetworkFlowAnalysis</module>
+        <module>NewWorkFlowAnalysis</module>
     </modules>
 
 
