@@ -18,7 +18,7 @@ object SourceTest {
 
 
     // 1. 从集合获取数据
-    val stream1 = environment
+    val value1: DataStream[SensorReading] = environment
       .fromCollection(List(
         SensorReading("sensor_1", 1547718199, 35.8),
         SensorReading("sensor_6", 1547718201, 15.4),

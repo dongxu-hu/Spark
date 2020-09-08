@@ -19,6 +19,7 @@ import org.apache.flink.util.Collector
 import scala.collection.mutable.ListBuffer
 
 
+// 升级版， 1min为迟到时间，采用map收集数据进行处理。
 object NetworkFlow2 {
   def main(args: Array[String]): Unit = {
 
@@ -28,8 +29,9 @@ object NetworkFlow2 {
     env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime)
 
     // 读取数据并转换为样例类，提起时间戳设置watermark
-    val inputStream: DataStream[String] = env.readTextFile("F:\\MyWork\\GitDatabase\\flink-programing\\NewWorkFlowAnalysis\\src\\main\\resources\\apache.log")
+//    val inputStream: DataStream[String] = env.readTextFile("F:\\MyWork\\GitDatabase\\flink-programing\\NewWorkFlowAnalysis\\src\\main\\resources\\apache.log")
 
+    val inputStream: DataStream[String] = env.socketTextStream("hadoop202", 7777)
 
     val DataStream: DataStream[WebServerLogEvent] = inputStream.map(line => {
       val arr: Array[String] = line.split(" ")
@@ -51,15 +53,17 @@ object NetworkFlow2 {
       .sideOutputLateData(new OutputTag[WebServerLogEvent]("lataTag"))
       .aggregate(new PageContAgg2(),new PageCountWindowResult2())
 
+    DataStream.print("data")
+    aggStream.print("agg")
+    aggStream.getSideOutput(new OutputTag[WebServerLogEvent]("lataTag")).print("lateTag")
+
     // 排序输出
     val resultStream = aggStream
       .keyBy(_.windowEnd)
       .process(new TopNPageResult2(3))
 
-    DataStream.print("data")
-    resultStream.print("agg")
-    aggStream.getSideOutput(new OutputTag[WebServerLogEvent]("lataTag")).print("lateTag")
-    resultStream.print("res")
+    resultStream.print()
+
     env.execute("network flow job")
   }
 }
@@ -115,9 +119,6 @@ class TopNPageResult2(n:Int) extends  KeyedProcessFunction[Long,PageViewCount,St
     while (iter.hasNext){
       val value: Map.Entry[String, Long] = iter.next()
       allPageViewCounts.append((value.getKey,value.getValue))
-
-      // 提前清除状态
-      pageViewCountmapState.clear()
 
       // 排序取topN
       val sortedPageViewCount = allPageViewCounts.sortWith(_._2 > _._2).take(n)

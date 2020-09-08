@@ -82,7 +82,8 @@ class PvCountResult() extends WindowFunction[Long, PvCount, String, TimeWindow] 
 // 实现自定义的KeyedProcessFunction，实现所有分组数据的聚合叠加
 class TotalPvCountResult() extends KeyedProcessFunction[Long, PvCount, PvCount]{
   // 定义一个状态，保存当前所有key的count总和
-  lazy val currentTotalCountState: ValueState[Long] = getRuntimeContext.getState(new ValueStateDescriptor[Long]("total-count", classOf[Long]))
+  lazy val currentTotalCountState: ValueState[Long] = getRuntimeContext
+    .getState(new ValueStateDescriptor[Long]("total-count", classOf[Long]))
 
   override def processElement(value: PvCount, ctx: KeyedProcessFunction[Long, PvCount, PvCount]#Context, out: Collector[PvCount]): Unit = {
     // 获取当前count总和

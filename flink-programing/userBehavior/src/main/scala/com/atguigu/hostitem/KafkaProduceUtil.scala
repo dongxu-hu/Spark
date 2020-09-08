@@ -4,6 +4,8 @@ import java.util.Properties
 
 import org.apache.kafka.clients.producer.{KafkaProducer, ProducerRecord}
 
+import scala.io.BufferedSource
+
 object KafkaProduceUtil {
   def main(args: Array[String]): Unit = {
       writeTokafka("hostitem")
@@ -22,7 +24,8 @@ object KafkaProduceUtil {
     val producer = new KafkaProducer[String, String](properties)
 
     //从文件读取数据
-    val bufferedSource = io.Source.fromFile("F:\\MyWork\\GitDatabase\\flink-programing\\userBehavior\\src\\main\\resources\\UserBehavior.csv")
+    val bufferedSource: BufferedSource = io.Source
+      .fromFile("F:\\MyWork\\GitDatabase\\flink-programing\\userBehavior\\src\\main\\resources\\UserBehavior.csv")
 
     for (elem <- bufferedSource.getLines()) {
       val record = new ProducerRecord[String,String](topic,elem)

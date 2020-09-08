@@ -13,6 +13,8 @@
         <module>userBehavior</module>
         <module>NetworkFlowAnalysis</module>
         <module>NewWorkFlowAnalysis</module>
+        <module>MaketAyalysis</module>
+        <module>LoginFailDelect</module>
     </modules>
 
 

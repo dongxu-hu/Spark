@@ -91,9 +91,9 @@ class PageCountWindowResult() extends  WindowFunction[Long,PageViewCount,String,
 
 // 自定义ProcessFunction，进行排序输出
 class TopNPageResult(n:Int) extends  KeyedProcessFunction[Long,PageViewCount,String]{
+
   // 定义一个列表状态
   lazy val pageViewCountListState:ListState[PageViewCount]= getRuntimeContext.getListState(new ListStateDescriptor[PageViewCount]("pageViewCount-ListState",classOf[PageViewCount]))
-
 
   override def processElement(value: PageViewCount, ctx: KeyedProcessFunction[Long, PageViewCount, String]#Context, out: Collector[String]): Unit = {
     pageViewCountListState.add(value)
@@ -117,9 +117,6 @@ class TopNPageResult(n:Int) extends  KeyedProcessFunction[Long,PageViewCount,Str
     val iter: util.Iterator[PageViewCount] = pageViewCountListState.get().iterator()
     while (iter.hasNext){
       allPageViewCounts += iter.next()
-
-      // 提前清除状态
-      pageViewCountListState.clear()
 
       // 排序取topN
       val sortedPageViewCount = allPageViewCounts.sortWith(_.count > _.count).take(n)

@@ -94,6 +94,7 @@ class ItemCountWindowResult() extends WindowFunction[Long,ItemViewCount,Tuple,Ti
     val windowEnd :Long= window.getEnd
     val count :Long = input.iterator.next()
 
+
     out.collect(ItemViewCount(itemId,count,windowEnd))
 
   }
@@ -106,7 +107,6 @@ class TopNHostItemsResult(n: Int) extends  KeyedProcessFunction[Tuple,ItemViewCo
 
   // 定义列表状态，用来保存当前窗口内所有商品的count结果
    private  var itemViewCountListState : ListState[ItemViewCount]=_
-
 
   override def open(parameters: Configuration): Unit ={
     itemViewCountListState = getRuntimeContext.getListState(
