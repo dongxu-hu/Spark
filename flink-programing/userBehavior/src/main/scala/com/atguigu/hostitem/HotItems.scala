@@ -18,6 +18,7 @@ import org.apache.flink.streaming.connectors.kafka.FlinkKafkaConsumer
 import org.apache.flink.util.Collector
 
 
+// 热门统计
 
 // 定义输入数据样例类
 case class  UserBehavior(userId:Long,itemId:Long,categoryId:Int,behavior:String,timestamp:Long)
@@ -48,7 +49,7 @@ object HotItems {
     })
         .assignAscendingTimestamps(_.timestamp*1000)   // 获取watermark，时间戳提取器，升序获取的watermark比正常时间戳晚 1ms
 
-//    DataStream.print("data")
+
 
     // 获取窗口聚合结果
     val aggSteam :DataStream[ItemViewCount]= DataStream
@@ -57,7 +58,6 @@ object HotItems {
       .timeWindow(Time.hours(1),Time.minutes(5))  // 窗口定义
       .aggregate(new ItemCountAgg(), new ItemCountWindowResult()) // 进行窗口聚合
 
-//    aggSteam.print("agg")
 
     // 使用窗口分组，排序输出TopN
     val resultStream: DataStream[String]= aggSteam

@@ -66,7 +66,7 @@ class  FilterBlackListUser(n :Int) extends KeyedProcessFunction[(Long,Long),AdCl
     // 获取count值
     val count: Long = countState.value()
 
-    // 判断是否为当天第一条数据，如果是，祖册第二天0点定时器
+    // 判断是否为当天第一条数据，如果是，增加第二天0点定时器
     if (count == 0){
       // 获取第二天零点时间
       val ts = (ctx.timerService().currentProcessingTime()/(1000*60*60*24) +1) *(1000*60*60*24)
@@ -94,7 +94,7 @@ class  FilterBlackListUser(n :Int) extends KeyedProcessFunction[(Long,Long),AdCl
   override def onTimer(timestamp: Long,
                        ctx: KeyedProcessFunction[(Long, Long), AdClickLog, AdClickLog]#OnTimerContext,
                        out: Collector[AdClickLog]): Unit = {
-    // 定时器触发时，判断是否为0点定时器，如果是，情况状态
+    // 定时器触发时，判断是否为0点定时器，如果是，清空状态
     if(timestamp == resutlTimerTsState.value()){
       countState.clear()
       isInBlackList.clear()

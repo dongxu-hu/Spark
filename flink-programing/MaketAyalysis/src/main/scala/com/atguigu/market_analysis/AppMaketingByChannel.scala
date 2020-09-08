@@ -66,7 +66,7 @@ object AppMaketingByChannel {
 
     val resultStream:DataStream[MarketingViewCount] = dataStream
       .filter(_.behavior != "UNINSTALL")
-      .keyBy("channel","behavior")      // 按照群岛过滤卸载行为
+      .keyBy("channel","behavior")      // 按照机型过滤卸载行为
       .timeWindow(Time.hours(1),Time.seconds(5)) //开滑动窗口进行统计
       .process( new MarketingCountByChannelFunction)
 

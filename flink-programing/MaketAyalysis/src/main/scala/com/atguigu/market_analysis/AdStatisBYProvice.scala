@@ -26,7 +26,7 @@ object AdStatisBYProvice {
       })
       .assignAscendingTimestamps(_.timestamp *1000)
 
-    // 更加省份分组,开窗聚合
+    // 根据省份分组,开窗聚合
     val adCountStream = adLogStream
       .keyBy(_.Provice)
       .timeWindow(Time.hours(1),Time.seconds(5))
