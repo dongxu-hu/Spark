@@ -34,10 +34,21 @@ object LoginFailwithCEp {
       })
 
     // 2. 定义一个模式匹配，用来检测复杂事件序列
+    //2.1 使用 next 严格近邻
     val loginFailPattern = Pattern.begin[UserLoginEvent]("firstFail")
         .where(_.eventTpye == "fail")
         .next("secondFail").where(_.eventTpye == "fail")
-        .within(Time.seconds(2))
+        .next("Fail").where(_.eventTpye == "fail")
+        .within(Time.seconds(5))
+
+    //2.2 使用  times + consecutive 严格近邻,多次数； 如果不添加consecutive，默认为宽松近邻
+/*    val loginFailPattern = Pattern.begin[UserLoginEvent]("fail")
+      .where(_.eventTpye == "fail")
+      .times(3).consecutive()
+      .within(Time.seconds(5))*/
+
+
+
 
     // 3. 对数据流应用定义好的模式，得到patternStream
     val patternStream = CEP.pattern(loginEvent.keyBy(_.userId),loginFailPattern)
@@ -58,8 +69,15 @@ class LoginFailSelect() extends PatternSelectFunction[UserLoginEvent,LoginFailWa
   override def select(pattern: util.Map[String, util.List[UserLoginEvent]]): LoginFailWarning = {
 
     // 从map结构中可以拿到第一次第二次登陆失败的事件
+
+    // 对应 2.1 方案
     val firstFailEven = pattern.get("firstFail").get(0)
-    val SecondFailEven = pattern.get("secondFail").get(0)
+    val SecondFailEven = pattern.get("Fail").get(0)
     LoginFailWarning(firstFailEven.userId,firstFailEven.timestamp,SecondFailEven.timestamp,"login fail")
+
+    // 对应 2.2 方案
+/*    val firstFailEven = pattern.get("fail").get(0)
+    val SecondFailEven = pattern.get("fail").get(2)
+    LoginFailWarning(firstFailEven.userId,firstFailEven.timestamp,SecondFailEven.timestamp,"login fail")*/
   }
 }

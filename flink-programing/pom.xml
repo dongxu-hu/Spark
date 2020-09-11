@@ -15,6 +15,7 @@
         <module>NewWorkFlowAnalysis</module>
         <module>MaketAyalysis</module>
         <module>LoginFailDelect</module>
+        <module>OrderPayDetect</module>
     </modules>
 
 
